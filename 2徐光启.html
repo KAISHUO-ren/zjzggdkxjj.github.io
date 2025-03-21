@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>徐光启 - 明代科学家</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.1/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .left-panel {
+            width: 30%;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .left-panel img {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .left-panel img:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .right-panel {
+            margin-left: 30%;
+            padding: 20px;
+            box-sizing: border-box;
+            padding-left: 40px;
+        }
+        .left-panel ul li {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .left-panel ul li:hover {
+            background-color: rgba(255,99,71,0.1);
+            transform: translateX(5px);
+        }
+        /* 新增时间轴样式 */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: #333;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: -8px;
+            width: 16px;
+            height: 16px;
+            background-color: #ff6347;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            animation: pulse 2s infinite;
+        }
+        .timeline-item:hover::before {
+            background-color: #ff4500;
+            animation: none;
+            transform: scale(1.3);
+        }
+        .timeline-content {
+            transition: all 0.3s ease;
+            transform-origin: left center;
+            opacity: 0.95;
+        }
+        .timeline-content:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            opacity: 1;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        /* 原有样式 */
+        #chart-container {
+            height: 500px;
+            background: white;
+            width: 1000px;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .video-container {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            border-radius: 0px;
+        }
+        .chart-text {
+            position: absolute;
+            top: 900px;
+            left: 1200px;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.9);
+            border: 2px solid #e0c17b;
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 1000;
+            writing-mode: vertical-rl; /* 竖排文字 */
+            text-orientation: upright;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-family: "宋体", serif;
+            line-height: 1.8;
+            letter-spacing: 4px;
+            max-height: 80%;
+            overflow: hidden;
+            width: auto;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="left-panel">
+    <img src="second/徐光启.jpg" 
+         style="width: 300px;height: 400px;object-fit:cover;border-radius:8px;">
+    <h2>徐光启 - 明代科学家</h2>
+    <ul>
+        <li>📜 农政全书：编纂中国历史上最完备的农业科学著作</li>
+        <li>🌐 西学东渐：与利玛窦合译《几何原本》等西方科学著作</li>
+        <li>🌾 农业改良：推广甘薯等抗旱作物，改进种植技术</li>
+        <li>🔭 天文历法：主持修订《崇祯历书》，引进西方天文知识</li>
+        <li>⚖️ 科学方法：首倡"欲求超胜，必须会通"的科学研究理念</li>
+    </ul>
+</div>
+
+<div class="right-panel">
+    <!-- 新增时间轴 -->
+    <div class="timeline">
+        <!-- 调整视频容器尺寸和定位 -->
+        <div id="cover-video" style="position: absolute; 
+                                    top: 0;  /* 移除原100px偏移 */
+                                    left: 20%;  /* 移除原-30px偏移 */; 
+                                    width: 100%; 
+                                    height: 100%; 
+                                    overflow: hidden;">  <!-- 添加溢出隐藏 -->
+            <video id="auto-play-video" 
+                   width="100%" 
+                   height="100%" 
+                   style="object-fit: contain;">  <!-- 改为contain适配 -->
+                <source src="second/徐光启生平.mp4" type="video/mp4">
+                您的浏览器不支持视频播放
+            </video>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>1562年</h3>
+                <p>徐光启出生</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>1604年</h3>
+                <p>中进士，入翰林院</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>1607年</h3>
+                <p>与利玛窦合译《几何原本》</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>1633年</h3>
+                <p>完成《农政全书》编纂</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>1633年</h3>
+                <p>徐光启逝世</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="chart-container"></div>
+    <div class="chart-text">
+        <p>此《农政全书》为明徐光启所著。</p>
+        <p>全书共六十卷，分十二门：</p>
+        <p>农本、田制、农事、水利、</p>
+        <p>农器、树艺、蚕桑、蚕桑广类、</p>
+        <p>种植、收养、制造、荒政。</p>
+        <p>卷数可见图</p>
+    </div>
+    
+    <div class="video-container">
+        <video controls id="scroll-video" style="margin: 20px 0;">
+            <source src="second/水利工程.mp4" type="video/mp4">
+            您的浏览器不支持视频播放
+        </video>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const video = document.getElementById('auto-play-video');
+        const coverVideo = document.getElementById('cover-video');
+    
+        // 为视频容器添加点击播放功能
+        coverVideo.addEventListener('click', function() {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.currentTime = 0; // 正在播放时点击重置进度
+            }
+        });
+    
+        // 自动播放失败时保持容器可点击状态
+        video.play().catch(e => {
+            console.log('自动播放被阻止，点击视频画面开始播放');
+            coverVideo.style.cursor = 'pointer'; // 显示可点击状态
+        });
+    });
+
+// 农政全书内容分布配置
+const chart = echarts.init(document.getElementById('chart-container'));
+chart.setOption({
+    title: { text: '《农政全书》内容分布', left: 'center' },
+    tooltip: { trigger: 'item', formatter: '{a} <br/>{b} : {c}卷 ({d}%)' },
+    legend: {
+        orient: 'vertical',
+        left: 'left',
+        data: ['《农本》','《田制》','《农事》','《水利》','《农器》','《树艺》','《蚕桑》','《蚕桑广类》','《种植》','《牧养》','《制造》','《荒政》']
+    },
+    series: [{
+        name: '《农政全书》',
+        type: 'pie',
+        radius: '70%',  // 放大饼图半径
+        center: ['35%', '50%'],  // 右移图表位置
+        data: [
+            {value:7,name:'《农本》',itemStyle:{color:'#ff9999'}},
+            {value:5,name:'《田制》',itemStyle:{color:'#66b1ff'}},
+            {value:14,name:'《农事》',itemStyle:{color:'#9fe8b8'}},
+            {value:21,name:'《水利》',itemStyle:{color:'#ffcc99'}},
+            {value:9,name:'《农器》',itemStyle:{color:'#b6a2de'}},
+            {value:14,name:'《树艺》',itemStyle:{color:'#d48265'}},
+            {value:9,name:'《蚕桑》',itemStyle:{color:'#91c7ae'}},
+            {value:5,name:'《蚕桑广类》',itemStyle:{color:'#749f83'}},
+            {value:9,name:'《种植》',itemStyle:{color:'#ca8622'}},
+            {value:2,name:'《牧养》',itemStyle:{color:'#bda29a'}},
+            {value:2,name:'《制造》',itemStyle:{color:'#6e7074'}},
+            {value:42,name:'《荒政》',itemStyle:{color:'#ff6666'}}
+        ],
+        emphasis: { itemStyle: { shadowBlur:10, shadowColor:'rgba(0,0,0,0.5)' } }
+    }]
+});
+
+// 饼图点击事件
+chart.on('click', function(params) {
+    const content = {
+        '《农本》':'包括《经史典故》《家诸杂论》等，阐述农业立国之本',
+        '《田制》':'考查井田制和历代田制',
+        '《农事》':'农田开垦与经营管理',
+        '《水利》':'水利工程与实施方法',
+        '《农器》':'农具图谱与使用说明',
+        '《树艺》':'谷物果蔬种植技术',
+        '《蚕桑》':'蚕桑业发展图谱',
+        '《蚕桑广类》':'木棉麻类生产技术',
+        '《种植》':'树木花卉栽培技术',
+        '《牧养》':'禽畜养殖技术',
+        '《制造》':'食品加工工艺',
+        '《荒政》':'防灾救灾体系'
+    }[params.name] || '暂无说明';
+    alert(`【${params.name}】\n卷数：${params.value}\n\n内容：${content}`);
+});
+
+// 响应式调整
+window.onresize = () => chart.resize();
+
+// 实现右侧小框内文字在滚动到该区域时一行一行循环出现的效果
+document.addEventListener('DOMContentLoaded', function() {
+    const chartText = document.querySelector('.chart-text');
+    const lines = chartText.querySelectorAll('p');
+    
+    function showLine(index) {
+        lines[index].style.opacity = 1;
+        lines[index].style.transform = 'translateY(0)';
+        
+        // 如果是最后一行，重置所有行，然后重新开始
+        if (index === lines.length - 1) {
+            setTimeout(() => {
+                lines.forEach((line, i) => {
+                    line.style.opacity = 0;
+                    line.style.transform = 'translateY(20px)';
+                });
+                showLine(0);
+            }, 1200); // 与显示间隔时间一致
+        } else {
+            setTimeout(() => {
+                showLine(index + 1);
+            }, 1600); // 每隔1.6秒显示下一行
+        }
+    }
+    
+    // 初始时隐藏所有行
+    lines.forEach(line => {
+        line.style.opacity = 0;
+        line.style.transform = 'translateY(20px)';
+        line.style.transition = 'opacity 0.8s ease, transform 0.8s ease'; // 同时调整动画过渡时间
+    });
+    
+    // 滚动到该区域时开始显示
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                showLine(0);
+                // observer.unobserve(entry.target); // 注释掉这行，允许循环
+            }
+        });
+    });
+    
+    observer.observe(chartText);
+});
+</script>
+</body>
+</html>

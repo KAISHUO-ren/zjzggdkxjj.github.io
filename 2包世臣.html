@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>包世臣 - 古代农业专家</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.1/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .left-panel {
+            width: 28%;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .left-panel img {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .left-panel img:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .right-panel {
+            margin-left: 30%;
+            padding: 20px;
+            box-sizing: border-box;
+            padding-left: 40px; /* Space from fixed left panel */
+            display: flex;
+            flex-direction: column;
+        }
+        .timeline-container {
+            display: flex;
+            flex: 1;
+            margin-bottom: 20px;
+        }
+        .timeline {
+            flex: 1;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: #333;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: -8px;
+            width: 16px;
+            height: 16px;
+            background-color: #ff6347;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .timeline-item:hover::before {
+            background-color: #ff4500;
+        }
+        .timeline-content {
+            transition: all 0.3s ease;
+            transform-origin: left center;
+            opacity: 0.95;
+        }
+        .timeline-content:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            opacity: 1;
+        }
+        .books-section {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .book-info {
+            width: 45%;
+        }
+        .book-info img {
+            max-width: 100%;
+            height: auto;
+        }
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .book-images img {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .book-images img:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .left-panel ul li {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .left-panel ul li:hover {
+            background-color: rgba(255,99,71,0.1);
+            transform: translateX(5px);
+        }
+
+        /* 时间轴点动画 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .timeline-item::before {
+            animation: pulse 2s infinite;
+        }
+        .timeline-item:hover::before {
+            animation: none;
+            transform: scale(1.3);
+        }
+
+        /* 优化原有过渡效果 */
+        .timeline-item::before {
+            transition: all 0.3s ease;
+        }
+
+        /* 视频样式 */
+        .video-container {
+            width: 400px;
+            height: 500px;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-left: 20px;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 新增古代风文字样式 */
+        .ancient-text {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #f9f3e6;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            font-family: "SimSun", "宋体", serif;
+            line-height: 1.8;
+            border: 1px solid #d1b284;
+            position: relative;
+        }
+        .ancient-text::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(to bottom, #d1b284, transparent);
+            z-index: 1;
+        }
+        .ancient-text::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(to top, #d1b284, transparent);
+            z-index: 1;
+        }
+        .ancient-text h3 {
+            color: #866a41;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: normal;
+            font-style: italic;
+        }
+        .ancient-text p {
+            white-space: pre-line;
+            color: #5d4a30;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="left-panel">
+    <img src="first/包世臣.jpg" 
+            style="width: 300px;height: 400px;object-fit:cover;border-radius:8px;">
+    <h2>包世臣 - 古代农业专家</h2>
+    <ul>
+        <li>📜 农业改革：提出多项农业改革措施，提高农业生产效率</li>
+        <li>📊 农业数据分析：对农业用地和人口数量进行详细统计和分析</li>
+        <li>🌾 推广先进农业技术：推广先进的耕作技术和水利工程</li>
+        <li>📚 农业著作：著有《齐民四术》，系统阐述农业理论和实践</li>
+        <li>🌱 生态农业：提倡生态农业，强调人与自然的和谐共生</li>
+    </ul>
+</div>
+
+<div class="right-panel">
+    <div class="timeline-container">
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3>1775年</h3>
+                    <p>包世臣出生</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3>1800年</h3>
+                    <p>开始研究农业</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3>1810年</h3>
+                    <p>著《齐民四术》</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3>1814年</h3>
+                    <p>上书两江总督百龄，促其设法拯救灾民</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3>1838年</h3>
+                    <p>林则徐向包世臣请教禁烟之法</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3>1855年</h3>
+                    <p>包世臣逝世</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加视频容器 -->
+        <div class="video-container">
+            <video controls>
+                <source src="first/包世臣生平.mp4" type="video/mp4">
+                您的浏览器不支持视频标签。
+            </video>
+        </div>
+    </div>
+
+    <div id="chart-container" style="height: 500px; background: white; width: 900px; border-radius: 10px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"></div>
+    <div id="chart-container2" style="flex: 1;height: 600px;width: 900px; background: white; border-radius: 10px; padding: 15px; min-height: 400px; border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>
+
+    <!-- 新增古代风文字区域 -->
+    <div class="ancient-text">
+        <h3>古代农业疆域与耕地</h3>
+        <p>内地，北至于长城，西抵嘉峪关，东至大海，南接西南边境，其可直接课税征役之王治之地，总计约三千六百里见方，折亩计之，约六千八百六十八万八千亩。其中，山、水、城镇、村落等非耕地所占，约去其四成，则余可耕之地，约四千一百二十一万二千八百亩也。</p>
+        <p>前此兵革未起，户口极盛时，为人七万万余口。</p>
+    </div>
+</div>
+
+<script>
+// 包世臣生平时间轴数据
+const lifeData = [
+    { year: "1775年", event: "出生", value: 0 },
+    { year: "1796年", event: "白莲教起义", value: 21 },
+    { year: "1840年", event: "鸦片战争,英国舰队封锁珠江口", value: 65 },
+    { year: "1842年", event: "清政府与英国签订《南京条约》", value: 67 },
+    { year: "1851年", event: "洪秀全-“金田起义”", value:76  },
+    { year: "1855年", event: "逝世", value:80  }
+];
+
+// 初始化时间轴图表
+const chart = echarts.init(document.getElementById('chart-container'));
+chart.setOption({
+    tooltip: { 
+        trigger: 'item',
+        formatter: (params) => {
+            const eventData = lifeData.find(d => d.year === params.name);
+            return `${"约" + params.name}<br>事件：${eventData.event}`;
+        }
+    },
+    xAxis: {
+        type: 'category',
+        data: lifeData.map(d => d.year),
+        axisLabel: {
+            rotate: 45,
+            formatter: function (value, index) {
+                return `${value}\n${lifeData[index].event}`;
+            }
+        }
+    },
+    yAxis: { 
+        show: true,
+        name: '年龄（岁）',
+        type: 'value',
+        nameLocation: 'middle',
+        nameGap: 30,
+        axisLabel: {
+            formatter: '{value}'
+        }
+    },
+    series: [{
+        type: 'line',
+        data: lifeData.map(d => d.value),
+        smooth: true,
+        lineStyle: { color: '#2b5b84', width: 3 },
+        itemStyle: { color: '#2b5b84' },
+        symbolSize: 12
+    }]
+});
+
+// ========== 数据比较图表 ==========
+const chart2 = echarts.init(document.getElementById('chart-container2'));
+const landData = [
+    { category: "推测农业耕地数据", 包世臣: 4121280000, 现代: 1071000000 },
+    { category: "盛世人口", 包世臣: 700000000, 现代: 400000000 }
+];
+
+chart2.setOption({
+    tooltip: { 
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' }
+    },
+    legend: {
+        data: ['包世臣估计', '现代推测'],
+        top: 20
+    },
+    xAxis: {
+        type: 'category',
+        data: landData.map(d => d.category),
+        axisLabel: {
+            rotate: 45
+        }
+    },
+    yAxis: {
+        type: 'value',
+        name: '面积（亩） / 人口（人）',
+        axisLabel: {
+            formatter: function (value) {
+                return value.toLocaleString();
+            }
+        }
+    },
+    series: [
+        {
+            name: '包世臣',
+            type: 'bar',
+            data: [landData[0].包世臣, landData[1].包世臣],
+            itemStyle: { color: '#2b5b84' }
+        },
+        {
+            name: '现代',
+            type: 'bar',
+            data: [landData[0].现代, landData[1].现代],
+            itemStyle: { color: '#c13a3a' }
+        }
+    ]
+});
+
+// 悬浮提示交互
+const tooltip = d3.select(".tooltip");
+
+chart2.on("mouseover", function(event) {
+    const tooltip = d3.select(".tooltip");
+    const [x, y] = [event.clientX, event.clientY];
+    const winWidth = window.innerWidth;
+    const winHeight = window.innerHeight;
+    
+    let posX = x + 20;
+    let posY = y;
+    
+    if (posX + 280 > winWidth) {
+        posX = x - 280 - 30;
+        tooltip.style("transform", "translate(-15px, -50%)")
+               .style("right", winWidth - x + 15 + "px")
+               .style("left", null);
+    } else {
+        tooltip.style("transform", "translate(15px, -50%)")
+               .style("left", posX + "px")
+               .style("right", null);
+    }
+
+    if (posY + 150 > winHeight) posY = winHeight - 150;
+
+    tooltip.style("opacity", 1)
+           .style("top", posY + "px")
+           .html(`<strong style="color:#2b5b84;font-size:16px;">包世臣</strong>
+                 <hr>
+                 <div style="color:#666;">
+                   <em style="display:block;margin-bottom:6px;">推测数据</em>
+                   农业用地:4,121,280,000亩<br>
+                   盛世人口：七亿
+                 </div>
+                 <div style="color:#666;">
+                   <em style="display:block;margin-bottom:6px;">现代推测数据</em>
+                   农业用地:1,071,000,000亩<br>
+                   盛世人口：四亿
+                 </div>`);
+});
+
+chart2.on("mouseout", function() {
+    d3.select(".tooltip").style("opacity",0);
+});
+
+// 响应式设计
+window.onresize = () => {
+    chart.resize();
+    chart2.resize();
+};
+</script>
+</body>
+</html>

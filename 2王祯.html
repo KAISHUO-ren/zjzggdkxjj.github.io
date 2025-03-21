@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>王祯 - 古代农业专家</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.1/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .left-panel {
+            width: 28%;
+            background-color: transparent; /* 移除原背景色 */
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .left-panel ul {
+            padding-left: 0; /* 移除列表默认缩进 */
+            list-style: none; /* 移除列表符号 */
+            margin: 20px 0;
+        }
+        .left-panel ul li {
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1); /* 半透明背景 */
+            border: 1px solid rgba(0,0,0,0.1); /* 添加细边框 */
+        }
+        .left-panel ul li:hover {
+            background: rgba(255,255,255,0.2); /* 悬停效果 */
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .left-panel img {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .left-panel img:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .right-panel {
+            margin-left: 30%;
+            padding: 20px;
+            box-sizing: border-box;
+            padding-left: 40px; /* Space from fixed left panel */
+        }
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+
+            background-color: #333; /* 恢复纯色竖线 */
+            box-shadow: none; /* 移除渐变阴影 */
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: -8px;
+            width: 16px;
+            height: 16px;
+            background-color: #ff6347;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .timeline-item:hover::before {
+            background-color: #ff4500;
+        }
+        .timeline-content {
+            transition: all 0.3s ease;
+            transform-origin: left center;
+            opacity: 0.95;
+        }
+        .timeline-content:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            opacity: 1;
+        }
+        .books-section {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .book-info {
+            width: 45%;
+        }
+        .book-info img {
+            max-width: 100%;
+            height: auto;
+        }
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .book-images img {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .book-images img:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .left-panel ul li {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .left-panel ul li:hover {
+            background-color: rgba(255,99,71,0.1);
+            transform: translateX(5px);
+        }
+
+        /* 时间轴点动画 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .timeline-item::before {
+            animation: pulse 2s infinite;
+        }
+        .timeline-item:hover::before {
+            animation: none;
+            transform: scale(1.3);
+        }
+
+        /* 优化原有过渡效果 */
+        .timeline::before {
+        background: linear-gradient(to bottom, #4CAF50 0%, #2196F3 100%);
+        width: 3px;
+        box-shadow: 0 4px 15px rgba(33,150,243,0.3);
+        }
+
+        .timeline-item::before {
+            background: #2196F3;
+            box-shadow: 0 0 0 5px rgba(33,150,243,0.2);
+            width: 20px;
+            height: 20px;
+            left: -10px;
+        }
+
+        .timeline-item:hover::before {
+            transform: scale(1.5);
+            background: #FF9800;
+        }
+
+        .timeline-content {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
+        }
+
+        .timeline-content:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        }
+
+        .timeline-content h3 {
+            color: #2196F3;
+            margin: 0 0 10px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-content h3::before {
+            content: "★";
+            color: #FF9800;
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .timeline-content p {
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+            padding-left: 20px;
+            border-left: 2px solid #eee;
+        }
+
+        /* 新增文字样式 */
+        .float-quote {
+            position: relative;
+            margin: 20px 0;
+            width: 600px;
+            max-width: 680px;
+            padding: 20px;
+            background: linear-gradient(145deg, #f8f5e6 0%, #fff9e6 100%);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(100,80,50,0.15);
+            border: 1px solid rgba(180,160,120,0.2);
+            font-family: 'Microsoft YaHei', '苹方-简', sans-serif;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .float-quote::before {
+            content: "🌱";
+            position: absolute;
+            left: -15px;
+            top: -15px;
+            font-size: 28px;
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.1));
+            animation: leaf-float 3s ease-in-out infinite;
+        }
+
+        .float-quote p {
+            margin: 0;
+            color: #4a4a36;
+            font-size: 15px;
+            line-height: 1.8;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            letter-spacing: 0.5px;
+        }
+
+        .float-quote em {
+            display: block;
+            margin-top: 12px;
+            font-style: normal;
+            color: #7d6b53;
+            font-size: 13px;
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .float-quote em::before {
+            content: "「 ";
+            color: #9e8c74;
+            font-size: 16px;
+            position: absolute;
+            left: 0;
+            top: 1px;
+        }
+
+        .float-quote em::after {
+            content: " 」";
+            color: #9e8c74;
+            font-size: 16px;
+        }
+
+        @keyframes leaf-float {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-8px) rotate(5deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="left-panel">
+    <img src="images/王祯.jpg" 
+            style="width: 300px;height: 400px;object-fit:cover;border-radius:8px;">
+    <h2>王祯 - 古代农业专家</h2>
+    <ul>
+        <li>📜 农业著作：著有《王祯农书》，系统阐述农业理论和实践</li>
+        <li>🌾 推广先进农业技术：推广先进的耕作技术和水利工程</li>
+        <li>📊 农业工具创新：发明和改进多种农业工具，提高生产效率</li>
+        <li>🌱 生态农业：提倡生态农业，强调人与自然的和谐共生</li>
+        <li>📚 农业教育：致力于农业知识的传播和教育</li>
+    </ul>
+</div>
+
+<div class="right-panel">
+    <!-- 视频播放器 -->
+    <div style="width: 100%; margin-bottom: 20px;">
+        <h2>王祯生平视频</h2>
+        <video controls style="width: 100%; border-radius: 8px;">
+            <source src="images/王祯生平.mp4" type="video/mp4">
+            您的浏览器不支持视频播放。
+        </video>
+    </div>
+
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>1271年</h3>
+                <p>王祯出生</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>1295年</h3>
+                <p>开始研究农业</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>1313年</h3>
+                <p>著《王祯农书》</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>1333年</h3>
+                <p>推广农业技术</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>1368年</h3>
+                <p>王祯逝世</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="chart-container" style="height: 500px; background: white; width: 900px; border-radius: 10px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"></div>
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>神农</h3>
+                <p>发明耒耜，以利天下。</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>尧</h3>
+                <p>命四子，敬授民时。</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>舜</h3>
+                <p>命后稷，食为政首。</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>禹</h3>
+                <p>平水土，定九州，制土田，各因所宜。</p>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <h3>汤 、 伊尹</h3>
+                <p>七年之旱，伊尹作为区田，教民粪种，负水浇稼。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增文字部分 -->
+    <div class="float-quote" style="width: 100%; padding: 20px; margin-top: 30px;">
+        <p>
+            南方水稻，其名不一，大概为类有三：早熟而紧细者曰籼，晚熟而香润者曰粳，早晚适中、米白而黏者曰糯。
+        </p>
+    </div>
+
+    <div>
+        <h1>《王祯农书》部分作物信息</h1>
+        <style>
+            .right-panel table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .right-panel th, 
+            .right-panel td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+            .right-panel th {
+                background-color: #f8f9fa;
+                border-bottom: 2px solid #2b5b84;
+            }
+            .right-panel tr:hover {
+                background-color: #f1f5f9;
+            }
+        </style>
+        <table>
+            <tr>
+                <th>作物</th>
+                <th>种类</th>
+            </tr>
+            <tr>
+                <td rowspan="3">稻</td>
+                <td>粳（晚熟而香润者）</td>
+            </tr>
+            <tr>
+                <td>籼(早熟而紧细者)</td>
+            </tr>
+            <tr>
+                <td>糯（早晚适中、米白而黏者）</td>
+            </tr>
+            <tr>
+                <td rowspan="2">葵</td>
+                <td>紫茎（叶大而圆，花小而黄）</td>
+            </tr>
+            <tr>
+                <td>白茎（叶大而圆，花小而黄）</td>
+            </tr>
+            <tr>
+                <td rowspan="4">桃</td>
+                <td>红桃</td>
+            </tr>
+            <tr>
+                <td>白桃</td>
+            </tr>
+            <tr>
+                <td>毛桃</td>
+            </tr>
+            <tr>
+                <td>油桃</td>
+            </tr>
+            <tr>
+                <td rowspan="2">大豆</td>
+                <td>黑（较强实，可备凶年）</td>
+            </tr>
+            <tr>
+                <td>白（粒大而美，多为食馔）</td>
+            </tr>
+            <tr>
+                <td rowspan="2">麻</td>
+                <td>雄麻（枲，皮滑而缕长，宜织为布）</td>
+            </tr>
+            <tr>
+                <td>雌麻（苴，皮粗而短，可缉为绳）</td>
+            </tr>
+            <tr>
+                <td rowspan="2">麦</td>
+                <td>小麦（苗弱而穗小，磨粉为面，可作饼饵）</td>
+            </tr>
+            <tr>
+                <td>大麦（苗强，穗大且长，宜为饭食，亦可为酒）</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script>
+// 王祯生平时间轴数据
+const lifeData = [
+    { year: "1271年", event: "忽必烈建立元朝", value: 0 },
+    { year: "1287年", event: "元朝征讨安南", value: 16 },
+    { year: "1307年", event: "元武宗海山即位", value: 36 },
+    { year: "1328年 ", event: "光天之难", value: 57 },
+    { year: "1368年", event: "逝世", value: 97 }
+];
+
+// 初始化时间轴图表
+const chart = echarts.init(document.getElementById('chart-container'));
+chart.setOption({
+    tooltip: { 
+        trigger: 'item',
+        formatter: (params) => {
+            const eventData = lifeData.find(d => d.year === params.name);
+            return `${params.name}<br>事件：${eventData.event}`; // 移除"约"字
+        }
+    },
+    xAxis: {
+        type: 'category',
+        name: '生活年代对应历史事件',
+        nameLocation: 'bottom',  // 保持在顶部
+        nameGap: 20,  // 增加间距防止重叠
+        nameTextStyle: {  // 新增文本样式
+            fontWeight: 'bold',
+            fontSize: 14,
+            padding: [-3, 0, 0, 0]  // 增加顶部padding
+        },
+        data: lifeData.map(d => d.year),
+        axisLabel: {
+            rotate:20,
+            formatter: function (value, index) {
+                return `${value}\n${lifeData[index].event}`;
+            }
+        }
+    },
+    yAxis: { 
+        show: true,
+        name: '年龄（岁）',
+        type: 'value',
+        nameLocation: 'middle',
+        nameGap: 30,
+        axisLabel: {
+            formatter: '{value}'
+        }
+    },
+    series: [{
+        type: 'line',
+        data: lifeData.map(d => d.value),
+        smooth: true,
+        lineStyle: { color: '#2b5b84', width: 3 },
+        itemStyle: { color: '#2b5b84' },
+        symbolSize: 12
+    }]
+});
+
+// 响应式设计
+window.onresize = () => {
+    chart.resize();
+};
+</script>
+</body>
+</html>

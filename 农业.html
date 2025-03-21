@@ -1,0 +1,476 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>H5,200行代码实现粒子漩涡特效与农业家展示融合</title>
+<style>
+html, body {
+	margin: 0px;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	background: #000;
+}
+#canvas {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	text-align: center;
+	position: relative;
+	z-index: 2;
+}
+h1 {
+	color: hsl(210, 97%, 58%);
+	margin: 30px 0;
+	font-size: 2.8em;
+	text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+.canvas-wrapper {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+#agricultureCanvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+.name-link {
+	position: absolute;
+	transform: translate(-50%, -50%);
+	text-decoration: none;
+	color: #34495e;
+	font-size: 20px;
+	font-weight: 600;
+	transition: all 0.3s;
+	z-index: 2;
+	padding: 5px 10px;
+	background: rgba(255,255,255,0.7);
+	border-radius: 5px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.name-link:hover {
+	color: #e74c3c;
+	transform: translate(-50%, -50%) scale(1.05);
+}
+#tooltip {
+	position: fixed;
+	background: rgba(255,255,255,0.97);
+	border: 2px solid #3498db;
+	border-radius: 12px;
+	padding: 15px 20px;
+	min-width: 250px;
+	max-width: 350px;
+	pointer-events: none;
+	box-shadow: 0 6px 20px hsl(106, 100%, 50%);
+	opacity: 0;
+	transition: opacity 0.3s;
+	z-index: 999;
+	line-height: 1.6;
+	font-size: 14px;
+}
+#tooltip div:first-child {
+	color: #3498db;
+	font-size: 18px !important;
+	margin-bottom: 10px !important;
+	font-weight: bold;
+}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div class="container">
+    <h1>中国古代部分农业家概述图</h1>
+    <span style="color: hsl(0, 53%, 71%); font-size: 15px;">以下是部分中国古代农业学家，他们对我国农业发展起到了极大的推动作用，点击名字可进入超链接</span>
+    <div class="canvas-wrapper">
+        <canvas id="agricultureCanvas" width="800" height="800"></canvas>
+        <div id="nameLinks"></div>
+        <div id="tooltip"></div>
+    </div>
+</div>
+
+<script>
+// 粒子漩涡特效代码
+function project3D(x, y, z, vars) {
+	var p, d;
+	x -= vars.camX;
+	y -= vars.camY - 8;
+	z -= vars.camZ;
+	p = Math.atan2(x, z);
+	d = Math.sqrt(x * x + z * z);
+	x = Math.sin(p - vars.yaw) * d;
+	z = Math.cos(p - vars.yaw) * d;
+	p = Math.atan2(y, z);
+	d = Math.sqrt(y * y + z * z);
+	y = Math.sin(p - vars.pitch) * d;
+	z = Math.cos(p - vars.pitch) * d;
+	var rx1 = -1000;
+	var ry1 = 1;
+	var rx2 = 1000;
+	var ry2 = 1;
+	var rx3 = 0;
+	var ry3 = 0;
+	var rx4 = x;
+	var ry4 = z;
+	var uc = (ry4 - ry3) * (rx2 - rx1) - (rx4 - rx3) * (ry2 - ry1);
+	var ua = ((rx4 - rx3) * (ry1 - ry3) - (ry4 - ry3) * (rx1 - rx3)) / uc;
+	var ub = ((rx2 - rx1) * (ry1 - ry3) - (ry2 - ry1) * (rx1 - rx3)) / uc;
+	if (!z) z = 0.000000001;
+	if (ua > 0 && ua < 1 && ub > 0 && ub < 1) {
+		return {
+			x: vars.cx + (rx1 + ua * (rx2 - rx1)) * vars.scale,
+			y: vars.cy + y / z * vars.scale,
+			d: (x * x + y * y + z * z)
+		};
+	} else {
+		return { d: -1 };
+	}
+}
+
+function elevation(x, y, z) {
+	var dist = Math.sqrt(x * x + y * y + z * z);
+	if (dist && z / dist >= -1 && z / dist <= 1) return Math.acos(z / dist);
+	return 0.00000001;
+}
+
+function rgb(col) {
+	col += 0.000001;
+	var r = parseInt((0.5 + Math.sin(col) * 0.5) * 16);
+	var g = parseInt((0.5 + Math.cos(col) * 0.5) * 16);
+	var b = parseInt((0.5 - Math.sin(col) * 0.5) * 16);
+	return "#" + r.toString(16) + g.toString(16) + b.toString(16);
+}
+
+function interpolateColors(RGB1, RGB2, degree) {
+	var w2 = degree;
+	var w1 = 1 - w2;
+	return [w1 * RGB1[0] + w2 * RGB2[0], w1 * RGB1[1] + w2 * RGB2[1], w1 * RGB1[2] + w2 * RGB2[2]];
+}
+
+function rgbArray(col) {
+	col += 0.000001;
+	var r = parseInt((0.5 + Math.sin(col) * 0.5) * 256);
+	var g = parseInt((0.5 + Math.cos(col) * 0.5) * 256);
+	var b = parseInt((0.5 - Math.sin(col) * 0.5) * 256);
+	return [r, g, b];
+}
+
+function colorString(arr) {
+	var r = parseInt(arr[0]);
+	var g = parseInt(arr[1]);
+	var b = parseInt(arr[2]);
+	return "#" + ("0" + r.toString(16)).slice(-2) + ("0" + g.toString(16)).slice(-2) + ("0" + b.toString(16)).slice(-2);
+}
+
+function process(vars) {
+	if (vars.points.length < vars.initParticles) for (var i = 0; i < 5; ++i) spawnParticle(vars);
+	var p, d, t;
+	p = Math.atan2(vars.camX, vars.camZ);
+	d = Math.sqrt(vars.camX * vars.camX + vars.camZ * vars.camZ);
+	d -= Math.sin(vars.frameNo / 80) / 25;
+	t = Math.cos(vars.frameNo / 300) / 165;
+	vars.camX = Math.sin(p + t) * d;
+	vars.camZ = Math.cos(p + t) * d;
+	vars.camY = -Math.sin(vars.frameNo / 220) * 15;
+	vars.yaw = Math.PI + p + t;
+	vars.pitch = elevation(vars.camX, vars.camZ, vars.camY) - Math.PI / 2;
+	var t;
+	for (var i = 0; i < vars.points.length; ++i) {
+		x = vars.points[i].x;
+		y = vars.points[i].y;
+		z = vars.points[i].z;
+		d = Math.sqrt(x * x + z * z) / 1.0075;
+		t = 0.1 / (1 + d * d / 5);
+		p = Math.atan2(x, z) + t;
+		vars.points[i].x = Math.sin(p) * d;
+		vars.points[i].z = Math.cos(p) * d;
+		vars.points[i].y += vars.points[i].vy * t * ((Math.sqrt(vars.distributionRadius) - d) * 2);
+		if (vars.points[i].y > vars.vortexHeight / 2 || d < 0.25) {
+			vars.points.splice(i, 1);
+			spawnParticle(vars);
+		}
+	}
+}
+
+function drawFloor(vars) {
+	var x, y, z, d, point, a;
+	for (var i = -25; i <= 25; i += 1) {
+		for (var j = -25; j <= 25; j += 1) {
+			x = i * 2;
+			z = j * 2;
+			y = vars.floor;
+			d = Math.sqrt(x * x + z * z);
+			point = project3D(x, y - d * d / 85, z, vars);
+			if (point.d != -1) {
+				size = 1 + 15000 / (1 + point.d);
+				a = 0.15 - Math.pow(d / 50, 4) * 0.15;
+				if (a > 0) {
+					vars.ctx.fillStyle = colorString(interpolateColors(rgbArray(d / 26 - vars.frameNo / 40), [0, 128, 32], 0.5 + Math.sin(d / 6 - vars.frameNo / 8) / 2));
+					vars.ctx.globalAlpha = a;
+					vars.ctx.fillRect(point.x - size / 2, point.y - size / 2, size, size);
+				}
+			}
+		}
+	}
+	vars.ctx.fillStyle = "#82f";
+	for (var i = -25; i <= 25; i += 1) {
+		for (var j = -25; j <= 25; j += 1) {
+			x = i * 2;
+			z = j * 2;
+			y = -vars.floor;
+			d = Math.sqrt(x * x + z * z);
+			point = project3D(x, y + d * d / 85, z, vars);
+			if (point.d != -1) {
+				size = 1 + 15000 / (1 + point.d);
+				a = 0.15 - Math.pow(d / 50, 4) * 0.15;
+				if (a > 0) {
+					vars.ctx.fillStyle = colorString(interpolateColors(rgbArray(-d / 26 - vars.frameNo / 40), [32, 0, 128], 0.5 + Math.sin(-d / 6 - vars.frameNo / 8) / 2));
+					vars.ctx.globalAlpha = a;
+					vars.ctx.fillRect(point.x - size / 2, point.y - size / 2, size, size);
+				}
+			}
+		}
+	}
+}
+
+function sortFunction(a, b) {
+	return b.dist - a.dist;
+}
+
+function draw(vars) {
+	vars.ctx.globalAlpha = 0.15;
+	vars.ctx.fillStyle = "#000";
+	vars.ctx.fillRect(0, 0, canvas.width, canvas.height);
+	drawFloor(vars);
+	var point, x, y, z, a;
+	for (var i = 0; i < vars.points.length; ++i) {
+		x = vars.points[i].x;
+		y = vars.points[i].y;
+		z = vars.points[i].z;
+		point = project3D(x, y, z, vars);
+		if (point.d != -1) {
+			vars.points[i].dist = point.d;
+			size = 1 + vars.points[i].radius / (1 + point.d);
+			d = Math.abs(vars.points[i].y);
+			a = 0.8 - Math.pow(d / (vars.vortexHeight / 2), 1000) * 0.8;
+			vars.ctx.globalAlpha = a >= 0 && a <= 1 ? a : 0;
+			vars.ctx.fillStyle = rgb(vars.points[i].color);
+			if (point.x > -1 && point.x < vars.canvas.width && point.y > -1 && point.y < vars.canvas.height) vars.ctx.fillRect(point.x - size / 2, point.y - size / 2, size, size);
+		}
+	}
+	vars.points.sort(sortFunction);
+}
+
+function spawnParticle(vars) {
+	var p, ls;
+	pt = {};
+	p = Math.PI * 2 * Math.random();
+	ls = Math.sqrt(Math.random() * vars.distributionRadius);
+	pt.x = Math.sin(p) * ls;
+	pt.y = -vars.vortexHeight / 2;
+	pt.vy = vars.initV / 20 + Math.random() * vars.initV;
+	pt.z = Math.cos(p) * ls;
+	pt.radius = 200 + 800 * Math.random();
+	pt.color = pt.radius / 1000 + vars.frameNo / 250;
+	vars.points.push(pt);
+}
+
+function frame(vars) {
+	if (vars === undefined) {
+		var vars = {};
+		vars.canvas = document.querySelector("#canvas");
+		vars.ctx = vars.canvas.getContext("2d");
+		vars.canvas.width = document.body.clientWidth;
+		vars.canvas.height = document.body.clientHeight;
+		window.addEventListener("resize", function () {
+			vars.canvas.width = document.body.clientWidth;
+			vars.canvas.height = document.body.clientHeight;
+			vars.cx = vars.canvas.width / 2;
+			vars.cy = vars.canvas.height / 2;
+		}, true);
+		vars.frameNo = 0;
+		vars.camX = 0;
+		vars.camY = 0;
+		vars.camZ = -14;
+		vars.pitch = elevation(vars.camX, vars.camZ, vars.camY) - Math.PI / 2;
+		vars.yaw = 0;
+		vars.cx = vars.canvas.width / 2;
+		vars.cy = vars.canvas.height / 2;
+		vars.bounding = 10;
+		vars.scale = 500;
+		vars.floor = 26.5;
+		vars.points = [];
+		vars.initParticles = 700;
+		vars.initV = 0.01;
+		vars.distributionRadius = 800;
+		vars.vortexHeight = 25;
+	}
+	vars.frameNo++;
+	requestAnimationFrame(function () {
+		frame(vars);
+	});
+	process(vars);
+	draw(vars);
+}
+frame();
+
+// 农业家展示代码
+const agronomists = [
+	{ name: '氾胜之', dynasty: '西汉', insights: '著作《氾胜之书》是中国最早农书，总结黄河流域农业生产经验。', url: '2氾胜之.html' },
+	{ name: '徐光启', dynasty: '明朝', insights: '《农政全书》作者，系统整理古代农业技术，融合西方科学知识。', url: '2徐光启.html' },
+	{ name: '陈旉', dynasty: '南宋', insights: '《陈旉农书》首次系统论述南方水稻栽培技术，强调因地制宜。', url: '2陈旉.html' },
+	{ name: '王祯', dynasty: '元朝', insights: '《王祯农书》整合南北农业技术，首创"农器图谱"系统记录农具。', url: '2王祯.html' },
+	{ name: '宋应星', dynasty: '明朝', insights: '《天工开物》记载大量农业技术，被誉为"中国17世纪的工艺百科全书"。', url: '2宋应星.html' },
+	{ name: '马一龙', dynasty: '明朝', insights: '《农说》提出"九功"理论，系统阐述农业生产要素关系。', url: '2马一龙.html' },
+	{ name: '杨屾', dynasty: '清朝', insights: '《知本提纲》详述西北旱作农业技术，提出生态农业理念。', url: '2杨屾.html' },
+	{ name: '包世臣', dynasty: '清朝', insights: '《齐民四术》主张农商并重，提出农业商品化经营理念。', url: '2包世臣.html' },
+	{ name: '贾思勰', dynasty: '北魏', insights: '贾思勰分析、整理、总结，写成农业科学技术巨作《齐民要术》', url: '2贾思勰.html' }
+];
+
+const agricultureCanvas = document.getElementById('agricultureCanvas');
+const agricultureCtx = agricultureCanvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+const nameLinks = document.getElementById('nameLinks');
+const baseRadius = 300;
+
+// 绘制基础图形
+function drawAgriculture() {
+	agricultureCtx.clearRect(0, 0, agricultureCanvas.width, agricultureCanvas.height);
+	
+	// 中心文字
+	agricultureCtx.save();
+	agricultureCtx.font = 'bold 68px 楷体';
+	agricultureCtx.fillStyle = '#3498db';
+	agricultureCtx.textAlign = 'center';
+	agricultureCtx.textBaseline = 'middle';
+	agricultureCtx.fillText('农  业', agricultureCanvas.width / 1.35, agricultureCanvas.height / 2.4);
+	agricultureCtx.restore();
+
+	// 节点和连线
+	const center = { x: agricultureCanvas.width / 0, y: agricultureCanvas.height / 2.5 };
+	const angleStep = (Math.PI * 2) / agronomists.length;
+
+	agronomists.forEach((_, index) => {
+		const angle = angleStep * index - Math.PI / 2;
+		const x = center.x + Math.cos(angle) * baseRadius;
+		const y = center.y + Math.sin(angle) * baseRadius;
+
+		// 连线
+		agricultureCtx.beginPath();
+		agricultureCtx.moveTo(center.x, center.y);
+		agricultureCtx.lineTo(x, y);
+		agricultureCtx.strokeStyle = 'rgba(52, 152, 219, 0.25)';
+		agricultureCtx.lineWidth = 2;
+		agricultureCtx.stroke();
+
+		// 节点
+		agricultureCtx.beginPath();
+		agricultureCtx.arc(x, y, 12, 0, Math.PI * 2);
+		agricultureCtx.fillStyle = '#e74c3c';
+		agricultureCtx.fill();
+		agricultureCtx.strokeStyle = '#c0392b';
+		agricultureCtx.lineWidth = 2;
+		agricultureCtx.stroke();
+	});
+}
+
+// 创建链接
+function createAgricultureLinks() {
+	const center = { x: agricultureCanvas.width / 1.4, y: agricultureCanvas.height / 2.5 };
+	const angleStep = (Math.PI * 2) / agronomists.length;
+
+	nameLinks.innerHTML = agronomists.map((person, index) => {
+		const angle = angleStep * index - Math.PI / 2;
+		const x = center.x + Math.cos(angle) * baseRadius;
+		const y = center.y + Math.sin(angle) * baseRadius;
+		const offset = angle % (Math.PI * 2) > Math.PI ? -40 : 40;
+		
+		return `<a class="name-link" href="${person.url}" 
+					 style="left: ${x + offset}px; top: ${y}px;">${person.name}</a>`;
+	}).join('');
+}
+
+// 对称定位提示框
+agricultureCanvas.addEventListener('mousemove', (e) => {
+	const rect = agricultureCanvas.getBoundingClientRect();
+	const mouseX = e.clientX - rect.left;
+	const mouseY = e.clientY - rect.top;
+
+	agronomists.forEach((person, index) => {
+		const angle = (Math.PI * 2 / agronomists.length) * index - Math.PI / 2;
+		const nodeX = agricultureCanvas.width / 2 + Math.cos(angle) * baseRadius;
+		const nodeY = agricultureCanvas.height / 2 + Math.sin(angle) * baseRadius;
+
+		if (Math.hypot(mouseX - nodeX, mouseY - nodeY) < 15) {
+			// 计算页面坐标
+			const scaleX = rect.width / agricultureCanvas.width;
+			const scaleY = rect.height / agricultureCanvas.height;
+			const pageX = rect.left + nodeX * scaleX;
+			const pageY = rect.top + nodeY * scaleY;
+
+			// 获取提示框尺寸
+			tooltip.innerHTML = `
+				<div>
+					${person.name}
+					<span style="color: #95a5a6; font-size: 0.8em;">（${person.dynasty}）</span>
+				</div>
+				<div style="color: #7f8c8d;">${person.insights}</div>
+			`;
+			tooltip.style.display = 'block';
+			const tooltipRect = tooltip.getBoundingClientRect();
+
+			// 对称定位算法
+			const angleDeg = angle * (180 / Math.PI);
+			const offsetDistance = 50; // 提示框与节点间距
+			
+			// 计算提示框坐标
+			const tipAngle = angle + Math.PI / 2; // 垂直外移
+			const tipX = pageX + Math.cos(tipAngle) * offsetDistance;
+			const tipY = pageY + Math.sin(tipAngle) * offsetDistance;
+
+			// 边界检测
+			const padding = 20;
+			let finalX = tipX;
+			let finalY = tipY - tooltipRect.height / 2;
+
+			// 水平边界
+			if (finalX < padding) finalX = padding;
+			if (finalX + tooltipRect.width > window.innerWidth - padding) {
+				finalX = window.innerWidth - tooltipRect.width - padding;
+			}
+
+			// 垂直边界
+			if (finalY < padding) finalY = padding;
+			if (finalY + tooltipRect.height > window.innerHeight - padding) {
+				finalY = window.innerHeight - tooltipRect.height - padding;
+			}
+
+			tooltip.style.left = `${finalX}px`;
+			tooltip.style.top = `${finalY}px`;
+			tooltip.style.opacity = 1;
+		}
+	});
+});
+
+agricultureCanvas.addEventListener('mouseleave', () => {
+	tooltip.style.opacity = 0;
+});
+
+// 初始化
+drawAgriculture();
+createAgricultureLinks();
+
+// 响应窗口大小变化
+window.addEventListener('resize', () => {
+	agricultureCanvas.width = document.body.clientWidth;
+	agricultureCanvas.height = document.body.clientHeight;
+	drawAgriculture();
+	createAgricultureLinks();
+});
+</script>
+</body>
+</html>

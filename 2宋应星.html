@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>宋应星 - 古代科学家</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.1/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .left-panel {
+            width: 30%;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .left-panel img {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .left-panel img:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .right-panel {
+            margin-left: 30%;
+            width: 70%;
+            padding: 20px;
+            box-sizing: border-box;
+            padding-left: 40px;
+            height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .section-box {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            position: relative;
+        }
+        #timeline-container {
+            height: 300px;
+        }
+        #grain-info-container {
+            min-height: 400px;
+        }
+        #piechart-container {
+            height: 500px;
+            position: relative;
+        }
+        .color-box {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .left-panel ul li {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .left-panel ul li:hover {
+            background-color: rgba(255,99,71,0.1);
+            transform: translateX(5px);
+        }
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: #333;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: -8px;
+            width: 16px;
+            height: 16px;
+            background-color: #ff6347;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            animation: pulse 2s infinite;
+        }
+        .timeline-item:hover::before {
+            background-color: #ff4500;
+            animation: none;
+            transform: scale(1.3);
+        }
+        .timeline-content {
+            transition: all 0.3s ease;
+            transform-origin: left center;
+            opacity: 0.95;
+        }
+        .timeline-content:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            opacity: 1;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        /* 新增视频容器样式 */
+        .video-container {
+            width: 50%;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            margin-left: 20px;
+            float: right;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            border-radius: 0px;
+        }
+        /* 水稻视频背景样式 */
+        .rice-video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.3;
+            z-index: -1;
+        }
+        /* 新增的分列文字样式 */
+        .column-text {
+            position: absolute;
+            right: 350px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .text-column {
+            opacity: 0;
+            transition: opacity 1s ease;
+            line-height: 1.6;
+            font-size: 16px;
+            text-align: right;
+            font-family: "SimSun", "KaiTi", serif;
+            color: #555;
+            border-left: 2px solid #e0e0e0;
+            padding-left: 15px;
+            margin-left: 15px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="left-panel">
+    <img src="second/宋应星.jpg" style="width: 300px;height: 400px;object-fit:cover;border-radius:8px;">
+    <h2>宋应星 - 古代科学家</h2>
+    <ul>
+        <li>📜 科学著作：著有《天工开物》，系统记录了中国古代的技术和工艺</li>
+        <li>📊 农业技术：详细记录了农业生产的各个环节和技术</li>
+        <li>🌾 工业技术：记录了纺织、冶金、陶瓷等工业技术</li>
+        <li>📚 百科全书：涵盖了农业、手工业、矿业等多个领域</li>
+        <li>🌱 科学精神：强调实践和观察，提倡科学精神</li>
+    </ul>
+</div>
+
+<div class="right-panel">
+    <!-- 新增的竖直生平轴 -->
+    <div class="section-box" style="display: flex;">
+        <div style="flex: 1;">
+            <h2>宋应星生平时间轴</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>1587年</h3>
+                        <p>宋应星出生</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>1615年</h3>
+                        <p>开始科学研究</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>1637年</h3>
+                        <p>著《天工开物》</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>1644年</h3>
+                        <p>明朝灭亡</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>1666年</h3>
+                        <p>宋应星逝世</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="video-container">
+            <video controls id="scroll-video">
+                <source src="second/宋应星生平1.mp4" type="video/mp4">
+                您的浏览器不支持视频播放
+            </video>
+        </div>
+    </div>
+
+    <!-- 保留的图表时间轴 -->
+    <div class="section-box" id="timeline-container">
+        <h2>宋应星生活年代对应历史事件</h2>
+        <div id="timeline-chart" style="height: 250px;"></div>
+    </div>
+
+    <div class="section-box" id="grain-info-container">
+        <h2>稻谷综合信息表</h2>
+        <table>
+            <tr><th>分类</th><th>详情</th></tr>
+            <tr>
+                <td>稻谷类型</td>
+                <td>不粘稻谷（名称：亢，产出的米为粳米）<br>---<br>粘稻谷（名称：余，产出的米为糯米）<br>---<br>晚收带粘性稻谷（名称：粳稻，不能用于酿酒，只能用来煮粥）</td>
+            </tr>
+            <tr>
+                <td>稻谷形态</td>
+                <td>长芒、短芒、长粒、尖粒、圆顶、扁圆</td>
+            </tr>
+            <tr>
+                <td>稻米颜色</td>
+                <td>
+                    <span class="color-box" style="background-color: #ffffff;"></span>雪白<br>
+                    <span class="color-box" style="background-color: #f0e68c;"></span>牙黄<br>
+                    <span class="color-box" style="background-color: #ff4500;"></span>大赤<br>
+                    <span class="color-box" style="background-color: #800080;"></span>半紫<br>
+                    <span class="color-box" style="background-color: #000000;"></span>杂黑
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 水稻视频背景 -->
+    <video class="rice-video-background" autoplay muted loop>
+        <source src="second/水稻.mp4" type="video/mp4">
+        您的浏览器不支持视频播放
+    </video>
+
+    <div class="section-box" id="piechart-container">
+        <h2>谷物占比饼图</h2>
+        <canvas id="grainChart"></canvas>
+
+        <!-- 新增的分列文字 -->
+        <div class="column-text">
+            <div class="text-column">今天下育民人者，</div>
+            <div class="text-column">稻居十七，</div>
+            <div class="text-column">而来、牟、黍、稷居十三</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 宋应星生平时间轴数据
+    const lifeData = [
+        { year: "1587年", event: "出生", value: 0 },
+        { year: "1590年", event: "张居正改革后,党争加剧", value: 3 },
+        { year: "1616年", event: "努尔哈赤建立后金政权", value: 29 },
+        { year: "1619年", event: "萨尔浒之战", value: 32 },
+        { year: "1637年", event: "此时间附近著《天工开物》", value: 50 },
+        { year: "1644年", event: "明朝灭亡", value: 57 },
+        { year: "1666年", event: "逝世(未考证，为一推测)", value: 79 }
+    ];
+
+    // 初始化时间轴图表
+    const chart = echarts.init(document.getElementById('timeline-chart'));
+    chart.setOption({
+        tooltip: { 
+            trigger: 'item',
+            formatter: (params) => {
+                const eventData = lifeData.find(d => d.year === params.name);
+                return `${"约" + params.name}<br>事件：${eventData.event}`;
+            }
+        },
+        xAxis: {
+            type: 'category',
+            name: '历史时间轴',  // 新增x轴名称
+            nameLocation: 'center',
+            nameGap: 30,
+            data: lifeData.map(d => d.year),
+            axisLabel: {
+                rotate: 45,
+                formatter: function (value, index) {
+                    return `${value}\n${lifeData[index].event}`;
+                }
+            }
+        },
+
+        yAxis: { 
+            show: true,  // 修改为显示y轴
+            name: '生活年代对应历史事件',  // 新增y轴名称
+            nameTextStyle: {
+                color: '#666',
+                fontSize: 12,
+                padding: [0, 0, 10, 0]
+            },
+            type: 'value',
+            axisLine: {
+                lineStyle: {
+                    color: '#2b5b84',
+                    width: 2
+                }
+            },
+            axisLabel: {
+                color: '#666',
+                fontSize: 12,
+                formatter: '{value} 年'
+            },
+            splitLine: {
+                show: true,
+                lineStyle: {
+                    color: '#eee',
+                    type: 'dashed'
+                }
+            }
+        },
+        series: [{
+            type: 'line',
+            data: lifeData.map(d => d.value),
+            smooth: true,
+            lineStyle: { color: '#2b5b84', width: 3 },
+            itemStyle: { color: '#2b5b84' },
+            symbolSize: 12
+        }]
+    });
+
+    // 饼图配置
+    const ctx = document.getElementById('grainChart').getContext('2d');
+    const grainChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['稻', '来、牟、黍、稷'],
+            datasets: [{
+                data: [70, 30],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            aspectRatio: 0.65, 
+            plugins: { 
+                legend: { position: 'top' },
+                tooltip: { 
+                    callbacks: { 
+                        label: ctx => `${ctx.label}: ${ctx.raw}%` 
+                    }
+                }
+            }
+        }
+    });
+
+    // 响应式调整
+    window.onresize = () => {
+        chart.resize();
+        grainChart.resize();
+    };
+
+    function loopTextAnimation() {
+        const columns = document.querySelectorAll('.text-column');
+        let current = 0;
+        
+        function animate() {
+            // 隐藏所有列
+            columns.forEach(col => col.style.opacity = '0');
+            
+            // 显示当前列
+            columns[current].style.opacity = '1';
+            
+            // 更新索引并设置下次动画
+            current = (current + 1) % columns.length;
+            setTimeout(animate, 2000);  // 每2秒切换一次
+        }
+        
+        animate(); // 启动动画
+    }
+    
+    // 立即启动并无限循环
+    loopTextAnimation();
+</script>
+</body>
+</html>

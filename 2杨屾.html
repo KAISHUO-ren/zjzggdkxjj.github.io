@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>杨屾 - 古代农业教育家</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.1/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        
+        /* 左侧固定面板 */
+        .left-panel {
+            width: 28%;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .left-panel img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+        .left-panel img:hover {
+            transform: scale(1.02);
+        }
+        .left-panel ul {
+            list-style: none;
+            padding: 0;
+        }
+        .left-panel li {
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        .left-panel li:hover {
+            transform: translateX(5px);
+        }
+
+        /* 右侧可滚动面板 */
+        .right-panel {
+            margin-left: 30%;
+            padding: 40px;
+            width: 70%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* 卡片式模块 */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 新增的时间轴模块 */
+        .timeline-card {
+            display: flex;
+            gap: 20px;
+        }
+        .timeline-section {
+            flex: 1;
+        }
+        .video-container {
+            width: 50%;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            border-radius: 0px;
+        }
+
+        /* 历史事件图表 */
+        #historical-events-chart {
+            height: 300px;
+        }
+
+        /* 时间轴样式 */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: #333;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: -8px;
+            width: 16px;
+            height: 16px;
+            background-color: #ff6347;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            animation: pulse 2s infinite;
+        }
+        .timeline-item:hover::before {
+            background-color: #ff4500;
+            animation: none;
+            transform: scale(1.3);
+        }
+        .timeline-content {
+            transition: all 0.3s ease;
+            transform-origin: left center;
+            opacity: 0.95;
+        }
+        .timeline-content:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            opacity: 1;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* 土壤选择模块 */
+        .soil-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .soil-card {
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .soil-card:hover {
+            transform: translateY(-5px);
+        }
+        .sandy { background: #d2b48c; }
+        .loamy { background: #a9a9a9; }
+        .yellow-white { background: #f0e68c; }
+
+        /* 养蚕流程模块 */
+        .sericulture-section {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 20px;
+        }
+        .controls {
+            display: grid;
+            gap: 10px;
+        }
+        .controls button {
+            padding: 12px;
+            background: #2b5b84;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .controls button:hover {
+            background: #1c3a5a;
+        }
+        .info-display {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            min-height: 300px;
+        }
+        .info-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 左侧信息栏 -->
+    <div class="left-panel">
+        <img src="images/杨屾.jpg" alt="杨屾肖像">
+        <h2>杨屾 - 古代农业教育家</h2>
+        <ul>
+            <li>📜 农业著作：著有《知本提纲》</li>
+            <li>🌾 桑树种植技术改良</li>
+            <li>🐛 科学养蚕体系建立</li>
+            <li>📊 农业数据分析先驱</li>
+            <li>🌱 生态农业倡导者</li>
+        </ul>
+    </div>
+
+    <!-- 右侧内容 -->
+    <div class="right-panel">
+        <!-- 新增的杨屾生平时间轴模块 -->
+        <div class="card timeline-card">
+            <div class="timeline-section">
+                <h2>杨屾生平时间轴</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <h3>1687年</h3>
+                            <p>杨屾出生</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <h3>1725年</h3>
+                            <p>柞蚕在关中地区放养成功</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <h3>1729年</h3>
+                            <p>亲自种植桑树数百株</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <h3>1741年</h3>
+                            <p>附《豳风广义》荐帅念祖推广蚕桑</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <h3>1785年</h3>
+                            <p>杨屾逝世</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="video-container">
+                <video controls id="scroll-video">
+                    <source src="images/杨屾生平.mp4" type="video/mp4">
+                    您的浏览器不支持视频播放
+                </video>
+            </div>
+        </div>
+
+        <!-- 新增的杨屾生活年代对应历史事件模块 -->
+        <div class="card">
+            <h2>杨屾生活年代对应历史事件</h2>
+            <div id="historical-events-chart"></div>
+        </div>
+
+        <!-- 种桑择地模块 -->
+        <div class="card">
+            <h2>种桑择地之法</h2>
+            <p>凡种桑者，必择美地。近河之沃壤，及宅边东畔，并皆宜桑。其土性沙壤者为上，壤土者次之，黄白之土，又次之。</p>
+            
+            
+            <div class="soil-section">
+                <div class="soil-card sandy">
+                    <h3>★★★ 沙壤</h3>
+                    <img src="images/沙壤土.jpg" class="info-image">
+                    <p>沙壤的土壤颗粒较大，主要由沙粒和适量的黏粒组成。颜色可能因矿物质和有机质不同而有所差异，通常呈现疏松、透气的结构。</p>
+                </div>
+                <div class="soil-card loamy">
+                    <h3>★★ 壤土</h3>
+                    <img src="images/壤土.jpg" class="info-image">
+                    <p>壤土颗粒大小适中，兼具沙粒通透性和黏粒保水能力。颜色均匀，质地细腻柔软。</p>
+                </div>
+                <div class="soil-card yellow-white">
+                    <h3>★ 黄白土</h3>
+                    <img src="images/黄白土.jpg" class="info-image">
+                    <p>黄白土颜色呈黄白色，颗粒松散，有机质含量低。需改良施肥方可提升肥力。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 养蚕流程模块 -->
+        <div class="card">
+            <div class="sericulture-section">
+                <div class="controls">
+                    <button onclick="showSericulture('temperature')">温度控制</button>
+                    <button onclick="showSericulture('humidity')">湿度管理</button>
+                    <button onclick="showSericulture('seed-bath')">浴蚕种法</button>
+                    <button onclick="showSericulture('feeding')">饲蚕技术</button>
+                    <button onclick="showSericulture('clustering')">上簇方法</button>
+                    <button onclick="showSericulture('harvesting')">摘茧工艺</button>
+                </div>
+                
+                <div class="info-display" id="sericulture-info">
+                    <!-- 动态加载内容 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 杨屾生平时间轴数据
+        const yangShenLifeData = [
+            { year: "1687年", event: "出生", value: 0 },
+            { year: "1725年", event: "柞蚕在关中地区放养成功", value: 38 },
+            { year: "1729年", event: "亲自种植桑树数百株", value: 42 },
+            { year: "1741年", event: "附《豳风广义》荐帅念祖推广蚕桑", value: 54 },
+            { year: "1785年", event: "逝世", value: 98 }
+        ];
+
+        // 杨屾生活年代对应历史事件数据
+        const historicalEvents = [
+            { year: "1689年", event: "中俄签订《尼布楚条约》", value: 2 },
+            { year: "1715年", event: "清代文学家蒲松龄去世", value: 28 },
+            { year: "1730年", event: "清廷在北京始建清漪园（重建后改名颐和园）", value: 43 },
+            { year: "1744年", event: "《大清一统志》成书", value: 57 },
+            { year: "1785年", event: "乾隆御极五十年庆典，举办千叟宴", value: 98 }
+        ];
+
+        // 初始化时间轴图表
+        const historicalChart = echarts.init(document.getElementById('historical-events-chart'));
+        historicalChart.setOption({
+            tooltip: { 
+                trigger: 'item',
+                formatter: (params) => {
+                    const eventData = historicalEvents.find(d => d.year === params.name);
+                    return `${params.name}<br>事件：${eventData.event}`;
+                }
+            },
+            xAxis: {
+                type: 'category',
+                data: historicalEvents.map(d => d.year),
+                axisLabel: {
+                    rotate: 45,
+                    formatter: function (value, index) {
+                        return `${value}\n${historicalEvents[index].event}`;
+                    }
+                }
+            },
+            yAxis: { 
+                show: true,
+                name: '时间跨度',
+                type: 'value',
+                nameTextStyle: {
+                    color: '#666',
+                    fontSize: 12,
+                    padding: [0, 0, 10, 0]
+                },
+                axisLine: {
+                    lineStyle: {
+                        color: '#2b5b84',
+                        width: 2
+                    }
+                },
+                axisLabel: {
+                    color: '#666',
+                    fontSize: 12,
+                    formatter: '{value} 年'
+                },
+                splitLine: {
+                    show: true,
+                    lineStyle: {
+                        color: '#eee',
+                        type: 'dashed'
+                    }
+                },
+                min: 0,
+                max: 100
+            },
+            series: [{
+                type: 'line',
+                data: historicalEvents.map(d => d.value),
+                smooth: true,
+                lineStyle: { color: '#2b5b84', width: 3 },
+                itemStyle: { color: '#2b5b84' },
+                symbolSize: 12
+            }]
+        });
+
+        // 土壤信息展示
+        function showSoilInfo(type) {
+            const cards = document.querySelectorAll('.soil-card');
+            cards.forEach(card => {
+                card.querySelector('img').style.display = 'none';
+                card.querySelector('p')?.remove();
+            });
+
+            const currentCard = document.querySelector(`.${type}`);
+            const img = currentCard.querySelector('img');
+            img.style.display = 'block';
+
+            const descriptions = {
+                sandy: '沙壤的土壤颗粒较大，主要由沙粒和适量的黏粒组成。颜色可能因矿物质和有机质不同而有所差异，通常呈现疏松、透气的结构。',
+                loamy: '壤土颗粒大小适中，兼具沙粒通透性和黏粒保水能力。颜色均匀，质地细腻柔软。',
+                'yellow-white': '黄白土颜色呈黄白色，颗粒松散，有机质含量低。需改良施肥方可提升肥力。'
+            };
+
+            const desc = document.createElement('p');
+            desc.textContent = descriptions[type];
+            currentCard.appendChild(desc);
+        }
+
+        // 养蚕信息展示
+        const sericultureData = {
+            temperature: {
+                title: '温度控制',
+                content: '蚕性畏寒而喜暖，养蚕之法首在调其寒暖。寒则蚕不食，暖则蚕易病。必使室内如春，乃为得宜。',
+                img: 'images/养蚕.jpg'
+            },
+            humidity: {
+                title: '湿度管理',
+                content: '蚕性畏湿而喜燥，室内潮湿则易生疾病。需保持干燥通风，确保空气流通。',
+                img: 'images/养蚕.jpg'
+            },
+            'seed-bath': {
+                title: '浴蚕种法',
+                content: '蚕种将出，置器微温水浴。轻搅使壳易脱，重复三次后铺箔待出。',
+                img: 'images/plxabay蚕2.jpg'
+            },
+            feeding: {
+                title: '饲蚕技术',
+                content: '初饲嫩叶渐次加量，日饲两次确保饱腹。择新鲜叶去损叶，定时清理残叶。',
+                img: 'images/养蚕.jpg'
+            },
+            clustering: {
+                title: '上簇方法',
+                content: '五龄蚕体肥大时，竹制圆锥簇铺草秸。轻置其上令吐丝结茧。',
+                img: 'images/plxabay蚕3.jpg'
+            },
+            harvesting: {
+                title: '摘茧工艺',
+                content: '茧成后小心摘取，分开放置以待缫丝。注意保持茧壳完整。',
+                img: 'images/plxabay蚕4.jpg'
+            }
+        };
+
+        function showSericulture(type) {
+            const infoBox = document.getElementById('sericulture-info');
+            const data = sericultureData[type] || {
+                title: '详细信息',
+                content: '暂无相关信息',
+                img: ''
+            };
+
+            infoBox.innerHTML = `
+                <h2>${data.title}</h2>
+                <p>${data.content}</p>
+                ${data.img ? `<img src="${data.img}" class="info-image" alt="${data.title}">` : ''}
+            `;
+        }
+
+        // 初始化显示第一个养蚕信息
+        showSericulture('temperature');
+
+        // 响应式调整
+        window.onresize = () => {
+            historicalChart.resize();
+        };
+    </script>
+</body>
+</html>
